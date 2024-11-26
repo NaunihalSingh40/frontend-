@@ -1,39 +1,178 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
+import axios from "axios";
+
+const addEmployee = async (employeeData) => {
+  try {
+    const response = await axios.post('http://localhost:8080/api/employee/addEmployee', employeeData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
 
 const EmployeePage = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [formData, setFormData] = useState({
-    employeeId: "",
-    firstName: "",
-    lastName: "",
-    middleName: "",
-    email: "",
-    phoneNumber: "",
-    dateOfBirth: "",
-    gender: "",
-    profilePicture: "",
-    department: "",
-    designation: "",
-    employmentType: "",
-    employeeStatus: "Active",
-    dateOfJoining: "",
-    baseSalary: "",
+    employeeId: '',
+    firstName: '',
+    lastName: '',
+    middleName: '',
+    email: '',
+    phoneNumber: '',
+    dateOfBirth: '',
+    gender: '',
+    profilePicture: null,
+    username: '',
+    password: '',
+    department: '',
+    designation: '',
+    employmentType: '',
+    employeeStatus: 'Active',
+    dateOfJoining: '',
+    baseSalary: '',
     bonuses: 0,
     allowances: 0,
-    accountNumber: "",
-    bankName: "",
-    ifscCode: "",
-    panNumber: "",
-    taxSlabs: "",
-    permanentAddress: "",
-    currentAddress: "",
-    emergencyContactName: "",
-    emergencyContactRelationship: "",
-    emergencyContactPhone: "",
-    alternateEmail: "",
+    accountNumber: '',
+    bankName: '',
+    ifscCode: '',
+    panNumber: '',
+    taxSlabs: '',
+    permanentAddress: '',
+    currentAddress: '',
+    emergencyName: '',
+    emergencyRelationship: '',
+    emergencyPhoneNumber: '',
+    alternateNumber: '',
   });
+
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Handle input change
+  const handleInputChange = (e) => {
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: files[0], // Only store the file itself
+      }));
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage(''); // Reset any previous error messages
+  
+    const employeeData = new FormData();
+    
+    // Append all form fields to FormData
+    employeeData.append('employeeId', formData.employeeId);
+    employeeData.append('firstName', formData.firstName);
+    employeeData.append('lastName', formData.lastName);
+    employeeData.append('middleName', formData.middleName);
+    employeeData.append('email', formData.email);
+    employeeData.append('phoneNumber', formData.phoneNumber);
+    employeeData.append('dateOfBirth', formData.dateOfBirth);
+    employeeData.append('gender', formData.gender);
+    
+    // If there is a profile picture, append it
+    if (formData.profilePicture) {
+      employeeData.append('profilePicture', formData.profilePicture);
+    }
+  
+    employeeData.append('username', formData.username);
+    employeeData.append('password', formData.password);
+    employeeData.append('department', formData.department);
+    employeeData.append('designation', formData.designation);
+    employeeData.append('employmentType', formData.employmentType);
+    employeeData.append('employeeStatus', formData.employeeStatus);
+    employeeData.append('dateOfJoining', formData.dateOfJoining);
+    employeeData.append('baseSalary', formData.baseSalary);
+    employeeData.append('bonuses', formData.bonuses);
+    employeeData.append('allowances', formData.allowances);
+    employeeData.append('accountNumber', formData.accountNumber);
+    employeeData.append('bankName', formData.bankName);
+    employeeData.append('ifscCode', formData.ifscCode);
+    employeeData.append('panNumber', formData.panNumber);
+    employeeData.append('taxSlabs', formData.taxSlabs);
+    
+    employeeData.append('permanentAddress', formData.permanentAddress);
+    employeeData.append('currentAddress', formData.currentAddress);
+    employeeData.append('emergencyName', formData.emergencyName);
+    employeeData.append('emergencyRelationship', formData.emergencyRelationship);
+    employeeData.append('emergencyPhoneNumber', formData.emergencyPhoneNumber);
+    employeeData.append('alternateNumber', formData.alternateNumber);
+  
+    try {
+      // Directly making the API call to add the employee
+      const response = await axios.post('http://localhost:8080/api/employee/addEmployee', employeeData);
+  
+      if (response.data) {
+        // Handle successful response
+        alert('Employee successfully added!');
+  
+        // Reset the form fields after successful submission
+        setFormData({
+          employeeId: '',
+          firstName: '',
+          lastName: '',
+          middleName: '',
+          email: '',
+          phoneNumber: '',
+          dateOfBirth: '',
+          gender: '',
+          profilePicture: null,
+          username: '',
+          password: '',
+          department: '',
+          designation: '',
+          employmentType: '',
+          employeeStatus: 'Active',
+          dateOfJoining: '',
+          baseSalary: '',
+          bonuses: 0,
+          allowances: 0,
+          accountNumber: '',
+          bankName: '',
+          ifscCode: '',
+          panNumber: '',
+          taxSlabs: '',
+          permanentAddress: '',
+          currentAddress: '',
+          emergencyName: '',
+          emergencyRelationship: '',
+          emergencyPhoneNumber: '',
+          alternateNumber: '',
+        });
+      }
+    } catch (error) {
+      console.error('Error during employee save:', error);
+  
+      // Handle different error types
+      if (error.response) {
+        // Server responded with a status other than 2xx
+        const serverError = error.response.data.message || 'Something went wrong with the server!';
+        setErrorMessage(serverError);
+      } else if (error.request) {
+        // No response was received from the server
+        setErrorMessage('Network error: Please check your internet connection.');
+      } else {
+        // Something went wrong in setting up the request
+        setErrorMessage('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const [employees, setEmployees] = useState([
     {
       id: "E001",
@@ -62,59 +201,6 @@ const EmployeePage = () => {
   const employmentTypes = ["Full-time", "Part-time", "Contract"];
   const statuses = ["Active", "Inactive"];
 
-  const filteredEmployees = employees.filter((employee) => {
-    const matchesSearchTerm =
-      employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = selectedRole ? employee.role === selectedRole : true;
-    return matchesSearchTerm && matchesRole;
-  });
-
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setEmployees([
-      ...employees,
-      { ...formData, id: `E${employees.length + 1}` },
-    ]);
-    setIsFormVisible(false);
-    setFormData({
-      employeeId: "",
-      firstName: "",
-      lastName: "",
-      middleName: "",
-      email: "",
-      phoneNumber: "",
-      dateOfBirth: "",
-      gender: "",
-      profilePicture: "",
-      department: "",
-      designation: "",
-      employmentType: "",
-      employeeStatus: "Active",
-      dateOfJoining: "",
-      baseSalary: "",
-      bonuses: 0,
-      allowances: 0,
-      accountNumber: "",
-      bankName: "",
-      ifscCode: "",
-      panNumber: "",
-      taxSlabs: "",
-      permanentAddress: "",
-      currentAddress: "",
-      emergencyContactName: "",
-      emergencyContactRelationship: "",
-      emergencyContactPhone: "",
-      alternateEmail: "",
-    });
-  };
 
   const handleEdit = (employee) => {
     // Implement the edit functionality if needed
@@ -267,19 +353,6 @@ const EmployeePage = () => {
                       </option>
                     ))}
                   </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-blue-900">
-                    Profile Picture URL:
-                  </label>
-                  <input
-                    className="w-full p-2 border border-gray-300 rounded text-blue-900"
-                    type="text"
-                    name="profilePicture"
-                    value={formData.profilePicture}
-                    onChange={handleInputChange}
-                    placeholder="Profile Picture URL"
-                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1 text-blue-900">
@@ -450,19 +523,6 @@ const EmployeePage = () => {
                     value={formData.panNumber}
                     onChange={handleInputChange}
                     placeholder="PAN Number"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-blue-900">
-                    Tax Slabs:
-                  </label>
-                  <input
-                    className="w-full p-2 border border-gray-300 rounded text-blue-900"
-                    type="text"
-                    name="taxSlabs"
-                    value={formData.taxSlabs}
-                    onChange={handleInputChange}
-                    placeholder="Tax Slabs"
                   />
                 </div>
                 <div>
