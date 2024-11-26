@@ -93,7 +93,7 @@ export default function Home() {
     });
   };
 
-  const handleLoginSubmit = async  (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     let valid = true;
     let newLoginErrors = { email: "", password: "" };
@@ -131,27 +131,27 @@ export default function Home() {
 
       if (!response.ok) {
         const errorResult = await response.json();
-        setLoginErrors({ password:errorResult.message || "Login failed."});
+        setLoginErrors({ password: errorResult.message || "Login failed." });
         return;
       }
 
       const result = await response.json();
       console.log(result);
       const { success, message, jwtToken } = result;
-      setLoginErrors({password:message});
+      setLoginErrors({ password: message });
 
       document.cookie = ` authToken=${jwtToken}; path=/;`
 
       const user = JSON.parse(atob(jwtToken.split('.')[1]));
 
       console.log(user.userType);
-      
 
-      if(user.userType === 'Admin'){
+
+      if (user.userType === 'Admin') {
         router.push('/admin/main/dashboard');
-      }else if(user.userType === 'Sub Admin'){
+      } else if (user.userType === 'Sub Admin') {
         router.push('/subAdmin/main/dashboard');
-      }else if(user.userType === 'Employee'){
+      } else if (user.userType === 'Employee') {
         router.push('/employee/main/dashboard');
       }
 
@@ -161,8 +161,8 @@ export default function Home() {
           password: "",
         });
       }
-    } 
-    
+    }
+
     catch (error) {
       console.error(error);
       setErrors("Something went wrong. Please try again later.");
@@ -182,7 +182,7 @@ export default function Home() {
           </div>
         </div>
         <button
-          onClick={() => setIsLoginModalOpen(true)}
+          onClick={() => { console.log("was cliked"); setIsLoginModalOpen(true) }}
           className="text-white font-semibold px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-700"
         >
           Login
