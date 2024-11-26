@@ -76,9 +76,12 @@ const LeaveDashboard = () => {
         },
         body: JSON.stringify(formData),
       });
-  
+      console.log(response);
+      
       const result = await response.json();
-  
+    
+      console.log("abcd",result);
+      
       if (!response.ok) {
         console.error("Error response from server:", result);
         alert(result.message || "Failed to add or update the leave.");
