@@ -1,16 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import axios from "axios";
-
-const addEmployee = async (employeeData) => {
-  try {
-    const response = await axios.post('http://localhost:8080/api/employee/addEmployee', employeeData);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
 
 const EmployeePage = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
@@ -23,7 +14,6 @@ const EmployeePage = () => {
     phoneNumber: '',
     dateOfBirth: '',
     gender: '',
-    profilePicture: null,
     username: '',
     password: '',
     department: '',
@@ -38,7 +28,6 @@ const EmployeePage = () => {
     bankName: '',
     ifscCode: '',
     panNumber: '',
-    taxSlabs: '',
     permanentAddress: '',
     currentAddress: '',
     emergencyName: '',
@@ -53,72 +42,27 @@ const EmployeePage = () => {
   // Handle input change
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
-    if (type === 'file') {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: files[0], // Only store the file itself
-      }));
-    } else {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
-    }
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     setLoading(true);
-    setErrorMessage(''); // Reset any previous error messages
-  
-    const employeeData = new FormData();
-    
-    // Append all form fields to FormData
-    employeeData.append('employeeId', formData.employeeId);
-    employeeData.append('firstName', formData.firstName);
-    employeeData.append('lastName', formData.lastName);
-    employeeData.append('middleName', formData.middleName);
-    employeeData.append('email', formData.email);
-    employeeData.append('phoneNumber', formData.phoneNumber);
-    employeeData.append('dateOfBirth', formData.dateOfBirth);
-    employeeData.append('gender', formData.gender);
-    
-    // If there is a profile picture, append it
-    if (formData.profilePicture) {
-      employeeData.append('profilePicture', formData.profilePicture);
-    }
-  
-    employeeData.append('username', formData.username);
-    employeeData.append('password', formData.password);
-    employeeData.append('department', formData.department);
-    employeeData.append('designation', formData.designation);
-    employeeData.append('employmentType', formData.employmentType);
-    employeeData.append('employeeStatus', formData.employeeStatus);
-    employeeData.append('dateOfJoining', formData.dateOfJoining);
-    employeeData.append('baseSalary', formData.baseSalary);
-    employeeData.append('bonuses', formData.bonuses);
-    employeeData.append('allowances', formData.allowances);
-    employeeData.append('accountNumber', formData.accountNumber);
-    employeeData.append('bankName', formData.bankName);
-    employeeData.append('ifscCode', formData.ifscCode);
-    employeeData.append('panNumber', formData.panNumber);
-    employeeData.append('taxSlabs', formData.taxSlabs);
-    
-    employeeData.append('permanentAddress', formData.permanentAddress);
-    employeeData.append('currentAddress', formData.currentAddress);
-    employeeData.append('emergencyName', formData.emergencyName);
-    employeeData.append('emergencyRelationship', formData.emergencyRelationship);
-    employeeData.append('emergencyPhoneNumber', formData.emergencyPhoneNumber);
-    employeeData.append('alternateNumber', formData.alternateNumber);
-  
+    setErrorMessage('');
+
     try {
-      // Directly making the API call to add the employee
-      const response = await axios.post('http://localhost:8080/api/employee/addEmployee', employeeData);
-  
+      // Making the API call to add the employee
+      const response = await axios.post('http://localhost:8080/api/employee/addEmployee', formData);
+
+      console.log(response)
+
       if (response.data) {
         // Handle successful response
         alert('Employee successfully added!');
-  
+
         // Reset the form fields after successful submission
         setFormData({
           employeeId: '',
@@ -129,7 +73,6 @@ const EmployeePage = () => {
           phoneNumber: '',
           dateOfBirth: '',
           gender: '',
-          profilePicture: null,
           username: '',
           password: '',
           department: '',
@@ -144,7 +87,6 @@ const EmployeePage = () => {
           bankName: '',
           ifscCode: '',
           panNumber: '',
-          taxSlabs: '',
           permanentAddress: '',
           currentAddress: '',
           emergencyName: '',
@@ -152,20 +94,19 @@ const EmployeePage = () => {
           emergencyPhoneNumber: '',
           alternateNumber: '',
         });
+
+        isFormVisible(false)
       }
     } catch (error) {
       console.error('Error during employee save:', error);
-  
+
       // Handle different error types
       if (error.response) {
-        // Server responded with a status other than 2xx
         const serverError = error.response.data.message || 'Something went wrong with the server!';
         setErrorMessage(serverError);
       } else if (error.request) {
-        // No response was received from the server
         setErrorMessage('Network error: Please check your internet connection.');
       } else {
-        // Something went wrong in setting up the request
         setErrorMessage('An unexpected error occurred. Please try again.');
       }
     } finally {
@@ -173,43 +114,36 @@ const EmployeePage = () => {
     }
   };
   
-  const [employees, setEmployees] = useState([
-    {
-      id: "E001",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      mobile: "1234567890",
-      dateOfJoining: "2023-01-15",
-      role: "Developer",
-    },
-    {
-      id: "E002",
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      mobile: "0987654321",
-      dateOfJoining: "2022-12-10",
-      role: "Designer",
-    },
-    // Add more dummy employees here
-  ]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
 
   const roles = ["Developer", "Designer", "Manager", "Analyst"];
   const genders = ["Male", "Female", "Other"];
-  const employmentTypes = ["Full-time", "Part-time", "Contract"];
+  const employmentTypes = ["Full-Time", "Part-Time", "Contract", "Intern"];
   const statuses = ["Active", "Inactive"];
+  const [employees, setEmployees] = useState([]);
 
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/api/employee/getAllEmployees'); // Call GET API
+        setEmployees(response.data); // Set the employee data
+        setLoading(false); // Set loading to false
+      } catch (error) {
+        console.error("Error fetching employee data:", error);
+        setErrorMessage("Error fetching employee data");
+        setLoading(false);
+      }
+    };
 
-  const handleEdit = (employee) => {
-    // Implement the edit functionality if needed
-  };
+    fetchEmployees();
+  }, []);
 
-  const handleDelete = (id) => {
-    setEmployees(employees.filter((employee) => employee.id !== id));
-  };
+  if (loading) return <div>Loading...</div>;
+  if (errorMessage) return <div>{errorMessage}</div>;
 
+  
   return (
     <div className="p-8 min-h-screen bg-white ">
       <div className="flex items-center justify-between">
@@ -661,64 +595,56 @@ const EmployeePage = () => {
         </div>
 
         <table className="min-w-full bg-gray-100 rounded-lg shadow-md border border-gray-300 overflow-hidden">
-          <thead>
-            <tr className="bg-blue-900 text-white">
-              <th className="p-4 text-left">Profile</th>
-              <th className="p-4 text-left">ID</th>
-              <th className="p-4 text-left">Name</th>
-              <th className="p-4 text-left">Email</th>
-              <th className="p-4 text-left">Role</th>
-              <th className="p-4 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {employees
-              .filter(
-                (emp) =>
-                  emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  emp.id.toString().includes(searchTerm)
-              )
-              .filter((emp) => !selectedRole || emp.role === selectedRole)
-              .map((emp) => (
-                <tr
-                  key={emp.id}
-                  className="border-b border-gray-300 hover:bg-gray-200 transition-colors"
+      <thead>
+        <tr className="bg-blue-900 text-white">
+          <th className="p-4 text-left">Profile</th>
+          <th className="p-4 text-left">ID</th>
+          <th className="p-4 text-left">Name</th>
+          <th className="p-4 text-left">Email</th>
+          <th className="p-4 text-left">Role</th>
+          <th className="p-4 text-left">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {employees.map((emp) => (
+          <tr
+            key={emp.id}
+            className="border-b border-gray-300 hover:bg-gray-200 transition-colors"
+          >
+            <td className="p-4 text-center">
+                <div className="flex items-center justify-center w-12 h-12 bg-gray-300 rounded-full text-white">
+                  {/* If profile picture is not available, show initials */}
+                  {emp.firstName ? (
+                    <span className="font-bold text-xl">
+                      {emp.firstName.charAt(0)} {/* Display first letter of name */}
+                    </span>
+                  ) : (
+                    <span className="font-bold text-xl">?</span>
+                  )}
+                </div>
+            </td>
+            <td className="p-4 text-blue-900 font-semibold">{emp.employeeId}</td>
+            <td className="p-4 text-blue-900 font-semibold">{emp.firstName}</td>
+            <td className="p-4 text-blue-900">{emp.email}</td>
+            <td className="p-4 text-blue-900">{emp.designation}</td>
+            <td className="p-4 flex space-x-2">
+            <button
+                  onClick={() => handleEditClick(emp)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                 >
-                  <td className="p-4 text-center">
-                    <Image
-                      src={
-                        emp.profilePicture || '/admin/user.jpeg'
-                      }
-                      alt={emp.name}
-                      width={48}
-                      height={48}
-                      className="rounded-full object-cover"
-                    />
-                  </td>
-                  <td className="p-4 text-blue-900 font-semibold">{emp.id}</td>
-                  <td className="p-4 text-blue-900 font-semibold">
-                    {emp.name}
-                  </td>
-                  <td className="p-4 text-blue-900">{emp.email}</td>
-                  <td className="p-4 text-blue-900">{emp.role}</td>
-                  <td className="p-4 flex space-x-2">
-                    <button
-                      onClick={() => handleEditClick(emp)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClick(emp.id)}
-                      className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDeleteClick(emp._id)}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                >
+                  Delete
+                </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
       </div>
     </div>
   );
